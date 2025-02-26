@@ -10,23 +10,16 @@ import { ApolloServerPluginLandingPageDisabled } from '@apollo/server/plugin/dis
 import { expressMiddleware } from '@apollo/server/express4';
 import cookieSession from 'cookie-session'
 import logger from './logger'
+import { mergedGQLSchema } from '@app/graphql/schema'
+import { BaseContext } from '@apollo/server'
+import { resolvers } from '@app/graphql/resolvers'
 
-const typeDefs = `#graphql
-	type User {
-		username: String
-	}
-
-	type Query {
-		user: User
-	}
-`
-
-const resolvers = {
-	Query: {
-		user() {
-			return {username: 'Danny'}
-		}
-	}
+/**
+ * Just for ts compliance
+ */
+export interface AppContext {
+	req: Request
+	res: Response
 }
 
 /**
@@ -40,8 +33,8 @@ export default class MonitorServer {
 	constructor(app: Express) {
 		this.app = app
 		this.httpServer = new http.Server(app)
-		const schema = makeExecutableSchema({ typeDefs, resolvers })
-		this.server = new ApolloServer({
+		const schema = makeExecutableSchema({ typeDefs: mergedGQLSchema, resolvers })
+		this.server = new ApolloServer<AppContext | BaseContext>({
 			schema,
 			//lets us use graphiql tool
 			introspection: NODE_ENV !== 'production',

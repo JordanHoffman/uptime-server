@@ -8,6 +8,7 @@ type NotificationCreationAttributes = Optional<INotificationDocument, 'id' | 'cr
 const NotificationModel: ModelDefined<INotificationDocument, NotificationCreationAttributes> = sequelize.define(
 	'notifications',
 	{
+		//Notice "references". This seems to be how foreign key mapping works for sequelize
 		userId: {
 			type: DataTypes.INTEGER,
 			references: {

@@ -1,7 +1,7 @@
 import { buildSchema } from "graphql"
 
 /**
- * Notice the "input" type used here. This is specifically for grqaphql object types that can be passed as args. They typically represent objects that are sent from the client to the server. They need the "input" rather than the "type" qualifier. Otherwise they are just output types (meant to be from server/db to client) and cant be passed as args. This is only for objects. Simple scalar types and others can be passed as args.
+ * Notice the "input" type used here. This is specifically for grqaphql object types that can be passed as args. They're for objects that are sent from the client to the server. They need the "input" rather than the "type" qualifier. Otherwise they are just output types (meant to be from server/db to client) and cant be passed as args. This is only for objects. Simple scalar types and others can be passed as args.
  */
 export const userSchema = buildSchema(`#graphql
 	input Auth {

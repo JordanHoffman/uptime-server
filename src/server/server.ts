@@ -15,7 +15,7 @@ import { BaseContext } from '@apollo/server'
 import { resolvers } from '@app/graphql/resolvers'
 
 /**
- * Just for ts compliance
+ * Just for ts hints
  */
 export interface AppContext {
 	req: Request
@@ -64,7 +64,7 @@ export default class MonitorServer {
 			res.header('Cache-Control', 'no-cache, no-store, must-revalidate')
 			next()
 		})
-		//allows us to store jwt token in request session
+		//Allows us to have a session cookie on the client side. You'll see in the /graphql/resolvers/user login fxs that we set a req.session object and put JWT token data into it. I believe that is what updates/instantiates the cookie for the client. All future requests will have that session object that we can validate for protected routes.
 		app.use(
 			cookieSession({
 				name: 'session',

@@ -1,0 +1,2 @@
+#Purpose
+Graphql via Apollo divides the resolver and schema into 2 files.

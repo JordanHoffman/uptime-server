@@ -1,0 +1,3 @@
+#Purpose
+
+This seems to hold the types that get returned from the db query/mutations. You'll see the resolvers within the graphql folder using these a lot.

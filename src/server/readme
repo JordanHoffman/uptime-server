@@ -1,0 +1,3 @@
+#Purpose
+
+The server setup is more complex than normal because it uses express middleware on top of managing an httpServer isntance, rather than just using Apollo's standalone server. This is because we're doing websocket stuff and that needs express middleware and apparently we have to manage httpServer stuff... I hope I never have to do this boilerplate stuff.

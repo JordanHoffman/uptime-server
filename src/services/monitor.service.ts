@@ -164,6 +164,6 @@ export const deleteSingleMonitor = async (monitorId: number, userId: number, typ
 }
 
 // TODO: Create method to delete monitor heartbeats. (Teacher stated that cascade deletion to automatically do this gave him many issues)
-const deleteMonitorTypeHeartbeats = async (moniotrId: number, type: string): Promise<void> => {
-	console.log(moniotrId, type)
+const deleteMonitorTypeHeartbeats = async (monitorId: number, type: string): Promise<void> => {
+	console.log(monitorId, type)
 }

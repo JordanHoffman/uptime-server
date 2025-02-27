@@ -4,6 +4,9 @@ import { Request } from "express";
 import { GraphQLError } from "graphql";
 import { verify } from "jsonwebtoken";
 
+//gives us the timezone for each user
+export const appTimeZone: string = Intl.DateTimeFormat().resolvedOptions().timeZone
+
 export const isEmail = (email: string): boolean => {
   const regexExp =
     /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/gi;

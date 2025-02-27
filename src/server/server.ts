@@ -13,14 +13,15 @@ import logger from './logger'
 import { mergedGQLSchema } from '@app/graphql/schema'
 import { BaseContext } from '@apollo/server'
 import { resolvers } from '@app/graphql/resolvers'
+import { AppContext } from '@app/interfaces/monitor.interface'
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
+import timezone from 'dayjs/plugin/timezone'
+import customFormat from 'dayjs/plugin/customParseFormat'
 
-/**
- * Just for ts hints
- */
-export interface AppContext {
-	req: Request
-	res: Response
-}
+dayjs.extend(utc)
+dayjs.extend(timezone)
+dayjs.extend(customFormat)
 
 /**
  * Unlike typical express app.listen(). We have a seperately made http Server. This allows more granular control and is needed for stuff like web sockets apparently.

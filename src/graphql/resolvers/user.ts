@@ -1,6 +1,6 @@
 import { INotificationDocument } from "@app/interfaces/notification.interface";
 import { IUserDocument, IUserResponse } from "@app/interfaces/user.interface";
-import { AppContext } from "@app/server/server";
+import { AppContext } from "@app/interfaces/monitor.interface";
 import { createNotificationGroup, getAllNotificationGroups } from "@app/services/notification.service";
 import { createNewUser, getUserByProp, getUserBySocialId, getUserByUsernameOrEmail } from "@app/services/user.service";
 import { GraphQLError } from "graphql";

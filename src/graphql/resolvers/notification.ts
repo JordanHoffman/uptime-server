@@ -1,6 +1,6 @@
 import { INotificationDocument } from "@app/interfaces/notification.interface";
-import { AppContext } from "@app/server/server";
-import { getAllNotificationGroups } from "@app/services/notification.service";
+import { AppContext } from "@app/interfaces/monitor.interface";
+import { createNotificationGroup, deleteNotificationGroup, getAllNotificationGroups, updateNotificationGroup } from "@app/services/notification.service";
 import { authenticateGraphQLRoute } from "@app/utils/utils";
 
 export const NotificationResolver = {
@@ -12,6 +12,36 @@ export const NotificationResolver = {
 			return {
 				notifications
 			}
-		} 
+		}
+	},
+	Mutation: {
+		async createNotificationGroup(_: undefined, args: { group: INotificationDocument }, contextValue: AppContext) {
+			const { req } = contextValue
+			authenticateGraphQLRoute(req)
+			const notification: INotificationDocument = await createNotificationGroup(args.group)
+			return {
+				notifications: [notification]
+			}
+		},
+		async updateNotificationGroup(_: undefined, args: { notificationId: string, group: INotificationDocument }, contextValue: AppContext) {
+			const { req } = contextValue
+			authenticateGraphQLRoute(req)
+			const { notificationId, group } = args
+			await updateNotificationGroup(parseInt(notificationId), group)
+			//kind of cheating, but this returns what a db call would give us for the updated notification  
+			const notification = {...group, id: parseInt(notificationId)} 
+			return {
+				notifications: [notification]
+			}
+		},
+		async deleteNotificationGroup (_: undefined, args: { notificationId: string }, contextValue: AppContext) {
+			const { req } = contextValue
+			authenticateGraphQLRoute(req)
+			const { notificationId } = args
+			await deleteNotificationGroup(parseInt(notificationId))
+			return {
+				id: notificationId
+			}
+		}
 	}
 }

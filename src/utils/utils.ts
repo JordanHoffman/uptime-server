@@ -92,6 +92,10 @@ export const enableAutoRefreshJob = (cookies: string): void => {
 	}
 }
 
+export const encodeBase64 = (user: string, pass: string): string => {
+	return Buffer.from(`${user || ''}:${pass || ''}`).toString('base64')
+}
+
 /**
  * Websocket request doesn't have access to Express' req object. So we need to manually get cookie data from it.
  */

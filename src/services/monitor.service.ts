@@ -4,6 +4,12 @@ import { Model, Op } from "sequelize";
 import { getSingleNotificationGroup } from "./notification.service";
 import dayjs from "dayjs";
 
+const HTTP_TYPE = 'http'
+const TCP_TYPE = 'tcp'
+const MONGO_TYPE = 'mongodb'
+const REDIS_TYPE = 'redis'
+
+
 /**
  * create a new monitor for a user
  */
@@ -57,7 +63,7 @@ export const getUserActiveMonitors = async (userId: number): Promise<IMonitorDoc
 /**
  * Returns all active monitors for all users
  */
-export const getAllUserMonitors = async (): Promise<IMonitorDocument[]> => {
+export const getAllUsersActiveMonitors = async (): Promise<IMonitorDocument[]> => {
 	try {
 		const monitors: IMonitorDocument[] = await MonitorModel.findAll({
 			raw: true,
@@ -160,6 +166,23 @@ export const deleteSingleMonitor = async (monitorId: number, userId: number, typ
 		return result
 	} catch (error) {
 		throw new Error(error)
+	}
+}
+
+export const startCreatedMonitors = (monitor: IMonitorDocument, name: string, type: string): void => {
+	switch (type) {
+		case HTTP_TYPE:
+			console.log('http', monitor.name, name)
+			break;
+		case TCP_TYPE:
+			console.log('tcp', monitor.name, name)
+			break;
+		case MONGO_TYPE:
+			console.log('mongodb', monitor.name, name)
+			break;
+		case REDIS_TYPE:
+			console.log('redis', monitor.name, name)
+			break;
 	}
 }
 

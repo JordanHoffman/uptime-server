@@ -1,7 +1,9 @@
 import { IHeartbeat } from "@app/interfaces/heartbeat.interface"
 import { IMonitorDocument } from "@app/interfaces/monitor.interface"
 import { IEmailLocals } from "@app/interfaces/notification.interface"
-import { getMonitorById } from "@app/services/monitor.service"
+import logger from "@app/server/logger"
+import { createHttpHeartBeat } from "@app/services/http.service"
+import { getMonitorById, updateMonitorStatus } from "@app/services/monitor.service"
 import { encodeBase64 } from "@app/utils/utils"
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 import dayjs from "dayjs"
@@ -39,12 +41,12 @@ class HttpMonitor {
 			const monitorData: IMonitorDocument = await getMonitorById(monitorId!)
 			let basicAuthHeader = {}
 			if (httpAuthMethod === 'basic') {
-				basicAuthUser = {
+				basicAuthHeader = {
 					Authorization: `Basic ${encodeBase64(basicAuthUser!, basicAuthPass!)}`
 				}
 			}
 			if (httpAuthMethod === 'token') {
-				basicAuthUser = {
+				basicAuthHeader = {
 					Authorization: `Bearer ${bearerToken}`
 				}
 			}
@@ -70,7 +72,10 @@ class HttpMonitor {
 					...basicAuthHeader,
 					...(headers ? JSON.parse(headers) : {})
 				},
-				maxRedirects: redirects
+				maxRedirects: redirects,
+				...(bodyValue && {
+					data: bodyValue
+				})
 			}
 			const response: AxiosResponse = await axios.request(options)
 			const responseTime = Date.now() - startTime;
@@ -93,12 +98,72 @@ class HttpMonitor {
 
 			const doesntIncludeContentType = contentTypeList.length > 0 && !contentTypeList.includes(response.headers['content-type'])
 			if (!statusList.includes(response.status) || responseDurationTime > responseTime || doesntIncludeContentType) {
-				//throw an error
+				this.errorAssertionCheck(monitorData, heartbeatData)
 			} else { 
-				// success assertion
+				this.successAssertionCheck(monitorData, heartbeatData)
 			}
 		} catch (e) {
-			console.log(error)
+			const monitorData: IMonitorDocument = await getMonitorById(monitorId!)
+			this.httpError(monitorId!, startTime, monitorData, e)
+		}
+	}
+
+	async errorAssertionCheck(monitorData: IMonitorDocument, hearbeatData: IHeartbeat): Promise<void> {
+		this.errorCount += 1
+		const timestamp = dayjs.utc().valueOf()
+		await Promise.all([
+			updateMonitorStatus(monitorData, timestamp, "failure"),
+			createHttpHeartBeat(hearbeatData)
+		])
+		if (monitorData.alertThreshold > 0 && this.errorCount > monitorData.alertThreshold) {
+			this.errorCount = 0
+			this.noSuccessAlert = false
+			// TODO: send error email
+		}
+
+		logger.info(`http heartbeat failed assertions: monitor id ${monitorData.id}`)
+	}
+
+	async successAssertionCheck(monitorData: IMonitorDocument, hearbeatData: IHeartbeat): Promise<void> {
+		const timestamp = dayjs.utc().valueOf()
+		await Promise.all([
+			updateMonitorStatus(monitorData, timestamp, "success"),
+			createHttpHeartBeat(hearbeatData)
+		])
+		if (!this.noSuccessAlert) {
+			this.errorCount = 0
+			this.noSuccessAlert = true
+			// TODO: send success email
+		}
+
+		logger.info(`http heartbeat success: monitor id ${monitorData.id}`)
+	}
+
+	async httpError(monitorId: number, startTime: number, monitorData: IMonitorDocument, error: any): Promise<void> {
+		logger.info(`HTTP heartbeat failed: monitor id ${monitorData.id}`)
+		this.errorCount += 1
+		const timestamp = dayjs.utc().valueOf()
+
+		const hearbeatData: IHeartbeat = {
+			monitorId: monitorId!,
+			status: 1,
+			code: error.response.status ?? 500,
+			message: `${error.response.status} - ${error.response.statusText}`,
+			timestamp: dayjs.utc().valueOf(),
+			reqHeaders: JSON.stringify(error.response.headers) ?? '',
+			resHeaders: JSON.stringify(error.response.request.res.rawHeaders),
+			reqBody: '',
+			resBody: JSON.stringify(error.response.data) ?? '',
+			responseTime: Date.now() - startTime
+		}
+		await Promise.all([
+			updateMonitorStatus(monitorData, timestamp, "success"),
+			createHttpHeartBeat(hearbeatData)
+		])
+		if (monitorData.alertThreshold > 0 && this.errorCount > monitorData.alertThreshold) {
+			this.errorCount = 0
+			this.noSuccessAlert = false
+			// TODO: send error email
 		}
 	}
  }
